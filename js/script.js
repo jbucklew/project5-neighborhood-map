@@ -212,31 +212,3 @@ var ViewModel = function(){
 var vm = new ViewModel();
 ko.applyBindings( vm );
 vm.searchLocations.subscribe( vm.search );
-
-// wikipedia - from Intro to Ajax class
-var wiki = function(){
-    var self = this;
-    var wikiURL = 'http://en.wikipedia.org/w/api.php?action=opensearch&search='+city+
-                  '&format=json&callback=wikiCallback';
-
-    self.wikiRequestTimeout = setTimeout( function(){
-        $wikiElem.text( "failed to get wikipedia resources" );
-    }, 8000 );
-
-    self.getWikiIno(
-    $.ajax({
-        url: wikiURL,
-        dataType: "jsonp",
-        success: function( data ){
-            var articles = data[ 1 ];
-
-            for( var i = 0; i < articles.length; ++i ){
-                article = articles[ i ];
-                var url = 'http://en.wikipedia.org/wiki/' + article;
-                $wikiElem.append( '<li><a href="' + url + '">' + article + '</a></li>' );
-            }
- 
-            clearTimeout( wikiRequestTimeout );
-        }   
-    });
-}
