@@ -8,26 +8,27 @@ function Place(name, address, city_state){
     self.is_visible = ko.observable(true);
 }
 
+// Array of Place objects
 var places = [
         new Place( 'Abbe Museum', '26 Mount Desert Street', 'Bar Harbor, ME' ),
-        new Place( 'Mount Desert Oceanarium', '1351 State Rt 3', 'Bar Harbor, ME', 'activity' ),
-        new Place( 'Bar Harbor Grand Hotel', '269 Main Street', 'Bar Harbor, ME' ),
-        new Place( 'Coastal Kayaking Tours', '48 Cottage Street', 'Bar Harbor, ME' ),
         new Place( 'Atlantic Climbing School', '67 Main Street', 'Bar Harbor, ME' ),
+        new Place( 'Bar Harbor Grand Hotel', '269 Main Street', 'Bar Harbor, ME' ),
         new Place( 'Bar Harbor Whale Watch Co', '1 West Street', 'Bar Harbor, ME' ),
+        new Place( 'Coastal Kayaking Tours', '48 Cottage Street', 'Bar Harbor, ME' ),
         new Place( 'Hearthside Inn', '7 High Street', 'Bar Harbor, ME' ),
         new Place( 'Looking Glass Restaurant', '50 Eden Street', 'Bar Harbor, ME' ),
-        new Place( 'The Thirsty Whale', '40 Cottage Street', 'Bar Harbor, ME' ),
-        new Place( 'Side Street Cafe', '49 Rodick St', 'Bar Harbor, ME' )
+        new Place( 'Lulu Lobster Boat Rides', '56 West Street', 'Bar Harbor, ME' ),
+        new Place( 'Side Street Cafe', '49 Rodick St', 'Bar Harbor, ME' ),
+        new Place( 'The Thirsty Whale', '40 Cottage Street', 'Bar Harbor, ME' )
 ];
 
 // Google Maps
 // The code below is from the google maps tutorial on google
 // and from the Resume project mapping feature
-var map;
 var Map = function(){
     var self = this;
 
+    self.map;
     // using global infoWindow so only 1 open at a time
     self.infoWindow;
     // using global marker so only 1 selected at a time
@@ -38,36 +39,38 @@ var Map = function(){
     self.current_place_idx = 0;
     self.markers = [];
 
-    // bar harbor maine lat 44.3858, long -68.2094
+    // bar harbor maine lat 44.388781, long -68.210048
     self.mapDiv = document.getElementById('map');
+    self.mapCenterLat = 44.388781;
+    self.mapCenterLng = -68.210048;
+    // width <= 450 change zoom level for smaller viewports
+    var zoom_min = 15;
+    if( $('.map_container').width() <= 450 ){
+        zoom_min = 14;
+    }
     self.mapOptions = {
-        center: new google.maps.LatLng(44.3858,-68.2094),
-        // for browser:
-        zoom: 15,
-        // for mobile
-        //zoom: 14,
+        center: new google.maps.LatLng(self.mapCenterLat, self.mapCenterLng),
+        zoom: zoom_min,
         mapTypeId: google.maps.MapTypeId.ROADMAP
     }
 
+    self.mapBounds;
     self.initializeMap = function(){
-        map = new google.maps.Map(self.mapDiv, self.mapOptions);
-        window.mapBounds = new google.maps.LatLngBounds();
+        self.map = new google.maps.Map(self.mapDiv, self.mapOptions);
+        self.mapBounds = new google.maps.LatLngBounds();
         self.addMarkers();
     }
 
     self.createMapMarker = function( place_data, place_idx ) {
-//console.log( place_data );
-//console.log( place_idx );
         // The next lines save location data from the search result object to local variables
         var lat = place_data.geometry.location.lat();  // latitude from the place service
         var lon = place_data.geometry.location.lng();  // longitude from the place service
         var name = place_data.formatted_address;   // name of the place from the place service
-        var bounds = window.mapBounds;            // current boundaries of the map window
 
         // marker is an object with additional data about the pin for a single location
         var marker = new google.maps.Marker({
             animation: google.maps.Animation.DROP,
-            map: map,
+            map: self.map,
             position: place_data.geometry.location,
             title: name
         }); 
@@ -88,11 +91,7 @@ var Map = function(){
 
         // this is where the pin actually gets added to the map.
         // bounds.extend() takes in a map location object
-    //    bounds.extend(new google.maps.LatLng(lat, lon));
-        // fit the map to the new marker
-    //    map.fitBounds(bounds);
-        // center the map
-    //    map.setCenter(bounds.getCenter());
+        self.mapBounds.extend(new google.maps.LatLng(lat, lon));
     }
 
     // setTimeout issue with passing places index to createMapMarker
@@ -112,7 +111,7 @@ var Map = function(){
     }
 
     self.addMarkers = function(){
-        var service = new google.maps.places.PlacesService( map );
+        var service = new google.maps.places.PlacesService( self.map );
         var number_locations = places.length;
         for( var i=0; i < number_locations; i++ ){
             var request = {
@@ -124,7 +123,7 @@ var Map = function(){
 
     self.openInfoWindow = function( html ){
         self.infoWindow = new google.maps.InfoWindow({ content: html });
-        self.infoWindow.open( map, self.selectedMarker );
+        self.infoWindow.open( self.map, self.selectedMarker );
         google.maps.event.addListener( self.infoWindow, 'closeclick', function(){
             self.selectedMarker.setIcon();
             vm.locationSelected("");
@@ -132,7 +131,6 @@ var Map = function(){
     }
     // callback to show infowindow after marker animation has completed
     // show default data if yelp call fails
-//    function showInfoWindow( marker, place_idx ){
     self.showDefaultInfoWindow = function(){
         var html = '<p>' + places[ self.current_place_idx].name + '</p>' +
                    '<p>' + places[ self.current_place_idx ].address + '</p>';
@@ -142,15 +140,24 @@ var Map = function(){
     // used to show yelp data
     self.showInfoWindow = function( data ){
         var info = data.businesses[0];
-console.log( data );
-        var html = '<img src="' + info.image_url + '">"' +
-                   '<p>' + info.name + '</p>' + '<p>' + info.location.display_address + '</p>' +
-                   '<p>' + info.display_phone + '</p>' + '<img src="' + info.rating_img_url_small + '">';
+        // no image availabe public domain image from http://commons.wikimedia.org/wiki/File:No_image_available.svg
+        var image_url = 'images/no_image.png';
+        if(info.hasOwnProperty('image_url')){
+           image_url = info.image_url;
+        }
+        var html = '<div class="yelp_infowindow">' +
+                   '<div class="img_container"><img class="yelp_img" src="' + image_url + '"></div>' +
+                   '<span class="yelp_data"><p>' + info.name + '</p>' + 
+                   '<p>' + info.location.display_address + '</p>' +
+                   '<p>' + info.display_phone + '</p>' + 
+                   '</span>' + 
+                   '<div class="rating_container"><img class="yelp_rating" src="' + info.rating_img_url + '"></div>' +
+                   '<div class="link_container"><a target="_blank" href="' + info.url + '">View on Yelp</a></div>' +
+                   '</div>';
         self.openInfoWindow( html );
     }
 
     self.clickMarker = function( marker ){
-console.log(marker);
         if( self.infoWindow ){
             self.infoWindow.close();
         }
@@ -169,7 +176,6 @@ console.log(marker);
         }
         // set current_place_idx to be used with Yelp lookup
         self.current_place_idx = place_idx;
-console.log( place_idx + ' ' + self.current_place_idx );
         if( vm.locationSelected() !== places[place_idx].name ){
             vm.locationSelected( places[place_idx].name );
         }
@@ -190,43 +196,35 @@ console.log( place_idx + ' ' + self.current_place_idx );
     }
 }
 
-var gm = new Map();
-window.addEventListener( 'load', gm.initializeMap() );
-window.addEventListener( 'resize', function(e){
-    map.fitBounds(mapBounds);
-});
-
-
-// event listener for hamburger button to open locations
-// code from Response Web Design Fundamentals course
-var menu = document.querySelector('#menu');
-var drawer = document.querySelector('#locations');
-
-menu.addEventListener('click', function(e){
-  drawer.classList.toggle('open');
-  e.stopPropagation();
-});
-
-
-// knock out stuff
+// knockout js ViewModel class
 var ViewModel = function(){
     var self = this;
+    // track the current selected location
     self.locationSelected = ko.observable("");
+    // track any input to search box
     self.searchLocations = ko.observable("");
+    // track our list of Places
     self.places = ko.observableArray( places);
-
 
     self.getPlaces = function(){
         return this.places;
     };
 
+    // when location clicked update current location and trigger
+    // click event on location map marker 
     self.locationClicked = function(){
+        if( $('#menu').is( ':visible')){
+            // hide menu so user can see map marker infoWindow
+            $('#menu').trigger('click');
+        }
         self.locationSelected(this.name);
         google.maps.event.trigger( this.map_marker, 'click' );
     }
 
     // implemented this search with help from article found
     // http://opensoul.org/2011/06/23/live-search-with-knockoutjs/
+    // this search filters the menu items and markers using characters
+    // typed in search box. If empty, show all items in menu
     self.search = function( value ){
         for( var place in self.places() ){
             // use value to search string
@@ -240,14 +238,15 @@ var ViewModel = function(){
         }
     }
 }
-var vm = new ViewModel();
-ko.applyBindings( vm );
-vm.searchLocations.subscribe( vm.search );
 
-
+// Yelp Interface
 // http://forum.jquery.com/topic/hiding-oauth-secrets-in-jquery
 var Yelp = function(){
     var self = this;
+
+    // Yelp uses oauth1.0a
+    // normally would not put secret keys in javascript
+    // but necessary to make work for this class
     self.auth = {
         consumerKey: '12kSLeRwpslAKP3hw7IlUA',
         consumerSecret: 'IjtI9i_UfmgXGS0Su2uw5Pupu10',
@@ -288,6 +287,7 @@ var Yelp = function(){
         var parameterMap = OAuth.getParameterMap(self.message.parameters);
         parameterMap.oauth_signature = OAuth.percentEncode(parameterMap.oauth_signature);
 
+        // make ajax call to yelp so we can fail gracefully
         $.ajax({
             url: self.message.action,
             data: parameterMap,
@@ -301,3 +301,29 @@ var Yelp = function(){
         });
     }
 };
+
+// load map and add event listener on resize to keep markers
+// in view
+var gm = new Map();
+window.addEventListener( 'load', gm.initializeMap() );
+window.addEventListener( 'resize', function(e){
+    google.maps.event.trigger( gm.map, 'resize' );
+    gm.map.fitBounds(gm.mapBounds);
+    gm.map.setCenter(new google.maps.LatLng(gm.mapCenterLat, gm.mapCenterLng));
+});
+
+// create knockout ViewModel
+var vm = new ViewModel();
+ko.applyBindings( vm );
+// need to subscibe our search box to monitor keystrokes 
+// to filter menu items and map markers
+vm.searchLocations.subscribe( vm.search );
+
+// event listener for hamburger button to open locations
+// code from Response Web Design Fundamentals course
+var $menu = $("#menu");
+var $locations = $("#locations");
+$menu.click(function(e){
+    $locations.toggleClass('open');
+    e.stopPropagation();
+});

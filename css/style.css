@@ -29,6 +29,12 @@ input {
   width: 80%;
 }
 
+/* location menu and items */
+#locations {
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .locations__menu {
   display: none;
 }
@@ -40,13 +46,54 @@ input {
   text-transform: uppercase;
 }
 
-#locations {
-  margin-left: auto;
-  margin-right: auto;
+.locations__item:hover {
+  background-color: #fe7569;
+}
+
+.selected {
+  background-color: #6b98ff;
+}
+
+.yelp_infowindow {
+    display: flex;
+    flex-wrap: wrap;
+    width: 250px;
+}
+.img_container {
+    margin: 0;
+    order: 1;
+    padding: 0;
+    width: 50%;
+}
+.yelp_img {
+    height: 100px;
+    width: 100px;
+}
+.yelp_data {
+    margin: 0;
+    order: 2;
+    padding: 0;
+    width: 50%;
+}
+.rating_container {
+    margin: 0;
+    order: 3;
+    padding: 0;
+    width: 50%;
+}
+.yelp_rating {
+    height: 17px;
+    width: 84px;
+}
+.link_container {
+    margin: 0;
+    order: 4;
+    padding: 0;
+    width: 50%;
 }
 
 @media screen and (max-width: 450px){
-  .menu_box {
+  .menu__box {
     display: block;
   }
 
@@ -94,6 +141,7 @@ input {
   }
 
   .locations__menu {
+    cursor: pointer;
     display: inline-block;
     padding: 1em;
     text-align: center;
@@ -111,6 +159,15 @@ input {
     height: 100%;
     margin: 0 auto;
     width: 100%;
+  }
+
+  .yelp_infowindow{
+    width: 100%;
+  }
+
+  .yelp_data {
+    padding-left: 2px;
+    width: 48%;
   }
 }
 
@@ -152,13 +209,6 @@ input {
     text-align: left;
   }
 
-  .locations__item:hover {
-    background-color: #fe7569;
-  }
-
-  .selected {
-    background-color: #6b98ff;
-  }
 
   #locations {
     background-color: #fff;
