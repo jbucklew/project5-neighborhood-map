@@ -1,6 +1,4 @@
-/* height/width from Stackoverflow so the google map
-   would display at 100% height
-*/
+/* General styling */
 body, html {
   margin: 0;
   padding: 0;
@@ -19,34 +17,61 @@ input {
   width: 80%;
 }
 
-.menu__box {
+/* header and search box */
+.header {
+  min-height: 10%;
+  width: 100%;
+}
+
+.header_inner {
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+}
+
+.menu_box {
   display: none;
   width: 20%;
 }
 
-.search__box {
+.search_box {
   margin: 20px auto 0 auto;
   width: 80%;
 }
 
 /* location menu and items */
-#locations {
+#places {
+  background-color: #fff;
   margin-left: auto;
   margin-right: auto;
+  width: 200px;
+  z-index: 10;
 }
 
-.locations__menu {
+/* list menu */
+.places_menu {
   display: none;
 }
 
-.locations__item {
+.locations_list {
+  border: 1px solid #e0e0e0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  width: 100%;
+}
+
+.locations_item {
+  border-bottom: 1px solid #E0E0E0;
+  cursor: pointer;
   display: inline block;
   padding: 5px 0 5px 15px;
   text-align: center;
   text-transform: uppercase;
 }
 
-.locations__item:hover {
+.locations_item:hover {
   background-color: #fe7569;
 }
 
@@ -54,6 +79,20 @@ input {
   background-color: #6b98ff;
 }
 
+/* map */
+.map_container {
+  height: 90%;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+#map {
+  height: 100%;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* Yelp infowindow */
 .yelp_infowindow {
     display: flex;
     flex-wrap: wrap;
@@ -92,55 +131,33 @@ input {
     width: 50%;
 }
 
+/* smaller screens */
 @media screen and (max-width: 450px){
-  .menu__box {
+  .menu_box {
     display: block;
   }
 
-  #locations {
-    background-color: #fff;
+  /* locations menu and items */
+  #places {
     position: absolute;
     /* This trasform moves the drawer off canvas. */
-    -webkit-transform: translate(-202px, 0); 
-    transform: translate(-202px, 0); 
+    -webkit-transform: translate(-202px, 0);
+    transform: translate(-202px, 0);
     /* Optionally, we animate the drawer. */
     transition: transform 0.3s ease;
-    width: 200px;
-    z-index: 10;
   }
 
-  #locations.open {
-    -webkit-transform: translate(0, 0); 
-    transform: translate(0, 0); 
+  #places.open {
+    -webkit-transform: translate(0, 0);
+    transform: translate(0, 0);
   }
 
-  .locations__list {
-    border: 1px solid #e0e0e0;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    width: 100%;
-  }
-
-  .locations__item {
-    border-bottom: 1px solid #E0E0E0;
+  .locations_item {
     display: list-item;
     text-align: left;
   }
 
-  .header {
-    min-height: 10%;
-    width: 100%;
-  }
-
-  .header__inner {
-    display: flex;
-    margin-left: auto;
-    margin-right: auto;
-    width: 100%;
-  }
-
-  .locations__menu {
+  .places_menu {
     cursor: pointer;
     display: inline-block;
     padding: 1em;
@@ -148,19 +165,12 @@ input {
     width: 30px;
   }
 
+  /* map */
   .map_container {
-    height: 90%;
-    margin-left: auto;
-    margin-right: auto;
     width: 100%;
   }
 
-  #map {
-    height: 100%;
-    margin: 0 auto;
-    width: 100%;
-  }
-
+  /* yelp */
   .yelp_infowindow{
     width: 100%;
   }
@@ -171,6 +181,7 @@ input {
   }
 }
 
+/* larger widths */
 @media screen and (min-width: 451px){
   body {
     display: flex;
@@ -183,50 +194,23 @@ input {
 
   .header {
     order: 1;
-    min-height: 10%;
-    width: 100%;
   }
 
-  .header__inner {
-    display: flex;
-    margin-left: auto;
-    margin-right: auto;
-    width: 100%;
-  }
-
-  .locations__list {
-    border: 1px solid #e0e0e0;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    width: 100%;
-  }
-
-  .locations__item {
-    border-bottom: 1px solid #E0E0E0;
-    cursor: pointer;
+  /* locations menu and items */
+  .locations_item {
     display: list-item;
     text-align: left;
   }
 
-
-  #locations {
+  #places {
     background-color: #fff;
     order: 2;
     width: 30%;
   }
 
+  /* map */
   .map_container {
     order: 3;
-    margin-left: auto;
-    margin-right: auto;
-    height: 90%;
     width: 70%;
-  }
-
-  #map {
-    height: 100%;
-    margin: 0 auto;
-    width: 100%;
   }
 }
