@@ -17,6 +17,7 @@
 
 
 ### Site Used
+* udacity.com
 * stackoverflow.com 
 * http://commons.wikimedia.org/wiki/File:No_image_available.svg - public domain image of "no image" for use if yelp does not provide an image of the location
 * http://opensoul.org/2011/06/23/live-search-with-knockoutjs/ 
