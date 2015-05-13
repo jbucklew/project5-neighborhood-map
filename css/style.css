@@ -12,8 +12,7 @@ body {
 
 input {
   font-size: 16px;
-  margin-right: auto;
-  margin-left: auto;
+  margin: 0 auto;
   width: 80%;
 }
 
@@ -25,8 +24,7 @@ input {
 
 .header_inner {
   display: flex;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 auto;
   width: 100%;
 }
 
@@ -43,8 +41,7 @@ input {
 /* location menu and items */
 #places {
   background-color: #fff;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 auto;
   width: 200px;
   z-index: 10;
 }
@@ -82,14 +79,19 @@ input {
 /* map */
 .map_container {
   height: 90%;
-  margin-left: auto;
-  margin-right: auto;
+  margin: 0 auto;
 }
 
 #map {
   height: 100%;
   margin: 0 auto;
   width: 100%;
+}
+
+/* hide infowindows from view */
+/* contains infowindow templates */
+.infowindow {
+  display: none;
 }
 
 /* Yelp infowindow */

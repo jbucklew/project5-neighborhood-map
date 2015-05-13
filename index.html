@@ -6,7 +6,7 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>Bar Harbor, Maine Neighborhood Map</title>
     <link rel="stylesheet" type="text/css" href="css/style.css">
-    <script src="js/knockout-3.3.0.js.css"></script>
+    <script src="js/knockout-3.3.0.js"></script>
   </head>
   <body>
     <!-- menu icon and search box -->
@@ -37,6 +37,30 @@
     </div>
     <div class="map_container">
       <div id="map"></div>
+    </div>
+    <div class="infowindow">
+      <div class="default_infowindow">
+        <p class="name"></p>
+        <p class="address"></p>
+      </div>
+    </div>
+    <div class="infowindow">
+      <div class="yelp_infowindow">
+        <div class="img_container">
+          <img alt="Yelp Image" class="yelp_img" src="">
+        </div>
+        <span class="yelp_data">
+          <p class="name"></p>
+          <p class="address"></p>
+          <p class="phone"></p>
+        </span>
+        <div class="rating_container">
+          <img class="yelp_rating" src="">
+        </div>
+        <div class="link_container">
+          <a target="_blank" href="">View on Yelp</a>
+        </div>
+      </div>
     </div>
     <!-- google maps with places libraries for lookups to place markers -->
     <script src="https://maps.googleapis.com/maps/api/js?libraries=places"></script>

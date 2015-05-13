@@ -4,7 +4,7 @@ function Place( name, address, city_state ){
     self.name = name;
     self.address = address;
     self.city_state = city_state;
-    self.map_marker;
+    self.map_marker = null;
     self.is_visible = ko.observable(true);
 }
 
@@ -29,12 +29,12 @@ var Map = function(){
     var self = this;
 
     // google map
-    self.map;
+    self.map = null;
     // only 1 infoWindow shown at a time. holds currently selected
-    self.infoWindow;
+    self.infoWindow = null;
     // will hold the current selected marker - used to coordinate
     // with selected menu item
-    self.selectedMarker;
+    self.selectedMarker = null;
 
     // used to track the number of markers added to map since they
     // are added one at a time for animation purposes
@@ -53,16 +53,16 @@ var Map = function(){
         center: new google.maps.LatLng(self.mapCenterLat, self.mapCenterLng),
         zoom: zoom_level,
         mapTypeId: google.maps.MapTypeId.ROADMAP
-    }
+    };
 
     // initialize and load map.  Add markers from our places array
-    self.mapBounds;
+    self.mapBounds = null;
     self.mapDiv = document.getElementById( 'map' );
     self.initializeMap = function(){
         self.map = new google.maps.Map( self.mapDiv, self.mapOptions );
         self.mapBounds = new google.maps.LatLngBounds();
         self.addMarkers();
-    }
+    };
 
     // create the map marker and add to map
     self.createMapMarker = function( place_data, place_idx ){
@@ -91,7 +91,7 @@ var Map = function(){
 
         // keep all markers viewable on map
         self.mapBounds.extend( new google.maps.LatLng( lat, lng ) );
-    }
+    };
 
     // when adding markers to map need to keep markers sync'd with Places
     // object - callback function provides a way to pass index of Place object
@@ -100,7 +100,7 @@ var Map = function(){
         return function(){
             self.createMapMarker( results, place_idx );
         };
-    }
+    };
 
     // callback function for google maps PlacesService lookup
     // staggering the timeout value to setTimeout so markers drop on map
@@ -111,7 +111,7 @@ var Map = function(){
                 window.setTimeout( self.getCallback( results[0], idx ), idx * 100 );
             }
         };
-    }
+    };
 
     // lookup all markers in google's PlacesServices for map location using Places
     // from our places array
@@ -121,10 +121,10 @@ var Map = function(){
         for( var i=0; i < number_locations; i++ ){
             var request = {
                 query: places[i].address + ' ' + places[i].city_state
-            }
+            };
             service.textSearch( request, self.callback( i ) );
         }
-    }
+    };
 
     // create infoWindow for selected marker using the html being passed in
     self.openInfoWindow = function( html ){
@@ -138,15 +138,17 @@ var Map = function(){
             // recenter map in case opening info window moved it
             gm.map.setCenter( new google.maps.LatLng( gm.mapCenterLat, gm.mapCenterLng ) );
         });
-    }
+    };
 
     // default callback if Yelp lookup fails, to show infoWindow after marker animation
     // has completed
     self.showDefaultInfoWindow = function(){
-        var html = '<p>' + places[ self.current_place_idx].name + '</p>' +
-                   '<p>' + places[ self.current_place_idx ].address + '</p>';
-        self.openInfoWindow( html );
-    }
+        // clone default infowindow template from DOM
+        var $html = $('.default_infowindow').clone();
+        $html.find( '.name' ).text( places[ self.current_place_idx].name );
+        $html.find( '.address' ).text( places[ self.current_place_idx ].address );
+        self.openInfoWindow( $html[0] );
+    };
 
     // create html for infoWindow from yelp data then open window
     self.showInfoWindow = function( data ){
@@ -160,20 +162,18 @@ var Map = function(){
            image_url = info.image_url;
         }
 
-        // build html for infoWindow
-        var html = '<div class="yelp_infowindow">' +
-                   '<div class="img_container">' +
-                   '<img alt="Yelp Image" class="yelp_img" src="' + image_url + '"></div>' +
-                   '<span class="yelp_data"><p>' + info.name + '</p>' +
-                   '<p>' + info.location.display_address + '</p>' +
-                   '<p>' + info.display_phone + '</p>' +
-                   '</span>' +
-                   '<div class="rating_container"><img class="yelp_rating" src="' + info.rating_img_url +
-                   '"></div>' +
-                   '<div class="link_container"><a target="_blank" href="' + info.url + '">View on Yelp</a></div>' +
-                   '</div>';
-        self.openInfoWindow( html );
-    }
+        // clone yelp_window template to populate and pass to infowindow for viewing
+        var $yelp_html = $('.yelp_infowindow').clone();
+        $yelp_html.find( '.yelp_img' ).attr( 'src', image_url );
+        $yelp_html.find( '.name' ).text( info.name );
+        $yelp_html.find( '.address' ).text( info.location.display_address );
+        $yelp_html.find( '.phone' ).text( info.display_phone );
+        $yelp_html.find( '.yelp_rating' ).attr( 'src', info.rating_img_url );
+        $yelp_html.find( '.link_container a' ).attr( 'href', info.url );
+
+        // send copy of yelp_infowindow to be used for content of marker infowindow
+        self.openInfoWindow( $yelp_html[0] );
+    };
 
     // when a marker is clicked update marker icon and show infoWindow after animation completes
     self.clickMarker = function( marker ){
@@ -197,7 +197,6 @@ var Map = function(){
         // need to sync with ViewModel in case marker clicked and not menu item
         // find index in our places array of selected marker
         var number_places = places.length;
-        var place_idx;
         for( var place_idx = 0; place_idx < number_places; place_idx++ ){
             if( places[ place_idx ].map_marker === marker ){
                 break;
@@ -215,7 +214,7 @@ var Map = function(){
         // to show it was clicked.  Get Place information from Yelp
         self.selectedMarker = marker;
         self.selectedMarker.setIcon( 'images/blue_marker.png' );
-        if( self.selectedMarker.getAnimation() != null ){
+        if( self.selectedMarker.getAnimation() !== null ){
             self.selectedMarker.setAnimation(null);
         }else{
             self.selectedMarker.setAnimation( google.maps.Animation.BOUNCE );
@@ -226,8 +225,8 @@ var Map = function(){
                 yelp.lookup( places[ place_idx ].name, places[ place_idx ].city_state );
             }, 750 );
         }
-    }
-}
+    };
+};
 
 // knockout js ViewModel class
 var ViewModel = function(){
@@ -251,30 +250,38 @@ var ViewModel = function(){
         }
         self.placeSelected( this.name );
         google.maps.event.trigger( this.map_marker, 'click' );
-    }
+    };
 
     // implemented this search with help from article found
     // http://opensoul.org/2011/06/23/live-search-with-knockoutjs/
     // this search filters the menu items and markers using characters
     // typed in search box. If empty, show all items in menu
     self.search = function( value ){
-        for( var place in self.places() ){
-            // use value to search string
-            if( ( self.places()[ place ].name.toLowerCase().indexOf( value.toLowerCase() ) >= 0 ) ){
+        // make passed in string lower case for easier comparison
+        var value = value.toLowerCase();
+
+        // compare value_lower to all names in our places array to look
+        // for matches
+        for( var place_idx in self.places() ){
+            // get place name from our places array and make name lower case
+            // for easier comparison
+            var place_name = self.places()[ place_idx ].name.toLowerCase();
+
+            if( ( place_name.indexOf( value ) >= 0 ) ){
                 // part of Place name matches text in search box
                 // make menu item and map marker visible
-                self.places()[ place ].is_visible( true );
-                self.places()[ place ].map_marker.setVisible( true );
+                self.places()[ place_idx ].is_visible( true );
+                self.places()[ place_idx ].map_marker.setVisible( true );
 
             } else {
                 // no part of Place name matchss text in search box
                 // hide menu item and marker
-                self.places()[ place ].is_visible( false );
-                self.places()[ place ].map_marker.setVisible( false );
+                self.places()[ place_idx ].is_visible( false );
+                self.places()[ place_idx ].map_marker.setVisible( false );
             }
         }
-    }
-}
+    };
+};
 
 // Yelp Interface
 // http://forum.jquery.com/topic/hiding-oauth-secrets-in-jquery
@@ -333,20 +340,20 @@ var Yelp = function(){
             cache: true,
             dataType: 'jsonp',
             jsonpCallback: 'cb',
-        }).done( function( data, textStats, XMLHttpRequest ){
+        }).done( function( data ){
             // success - show yelp info in infoWindow
             gm.showInfoWindow( data );
         }).fail( function(){
             // failed - show default info in infoWindow
             gm.showDefaultInfoWindow();
         });
-    }
+    };
 };
 
 // load map and add event listener on resize to keep markers in view
 var gm = new Map();
 window.addEventListener( 'load', gm.initializeMap() );
-window.addEventListener( 'resize', function(e){
+window.addEventListener( 'resize', function(){
     google.maps.event.trigger( gm.map, 'resize' );
     gm.map.fitBounds( gm.mapBounds );
     gm.map.setCenter( new google.maps.LatLng( gm.mapCenterLat, gm.mapCenterLng ) );
@@ -363,7 +370,7 @@ vm.placeLocations.subscribe( vm.search );
 var $menu = $("#menu");
 var $places = $("#places");
 
-$menu.click( function(e){
+$menu.click( function( e ){
     $places.toggleClass( 'open' );
     e.stopPropagation();
 });
